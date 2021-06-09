@@ -1,0 +1,4 @@
+.vscode/**
+build/**
+temp.c
+*.exe
