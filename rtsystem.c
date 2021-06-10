@@ -7,15 +7,30 @@
 #include "order.h"
 #include "simulation.h"
 
-//OS command compatibility
-#ifdef _WIN32
-#define CLEAR_SCREEN "cls"     // for Windows
-#else
-#define CLEAR_SCREEN "clear"   // for *nix
-#endif
+//ORDERING DATA
+/*
+station position relative to Jakarta (Gambir)
+1. Jakarta: Gambir
+2. Cirebon: Cirebon
+3. Semarang: Poncol
+4. Surabaya: Pasar Turi
+5. Malang: Malang
+*/
+const distance_meter distance_list[] = {
+    0,      //Gambir
+    218,    //Cirebon
+    442,    //Semarang
+    742,    //Surabaya
+    870     //Malang
+};
 
-//error macros
-#define INPUT_ERROR "Err 001: masukkan salah! Tekan 1 untuk lanjut: "
+//temporary orders container, before simulation implementation
+Order order_list[100];
+
+//pause screen function
+void pause_scr(char char_to_press){
+    while (getchar() != char_to_press); //shows error until user inputs '1'
+}
 
 int main(){
     //global vars
@@ -44,19 +59,23 @@ int main(){
         switch(menu_opt){
             case 1:
                 //Pemesanan
+                newOrder(order_list, 100);
+                pause_scr('0');
                 break;
             case 2:
                 //Lihat pesanan
+                pause_scr('0');
                 break;
             case 3:
                 //bantuan
+                pause_scr('0');
                 break;
             case 0:
                 is_not_closed = FALSE;
                 break;
             default:
                 printf(INPUT_ERROR);
-                while (getchar() != '1'); //shows error until user inputs '1'
+                pause_scr('1');
         }
     }
 

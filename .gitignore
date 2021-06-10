@@ -2,3 +2,4 @@
 build/**
 temp.c
 *.exe
+xmpl.c
