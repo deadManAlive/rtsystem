@@ -16,7 +16,7 @@ station position relative to Jakarta (Gambir)
 4. Surabaya: Pasar Turi
 5. Malang: Malang
 */
-const distance_meter distance_list[] = {
+const distance_kmeter distance_list[] = {
     0,      //Gambir
     218,    //Cirebon
     442,    //Semarang
@@ -29,7 +29,7 @@ Order order_list[100];
 
 //pause screen function
 void pause_scr(char char_to_press){
-    while (getchar() != char_to_press); //shows error until user inputs '1'
+    while (getchar() != char_to_press); //prevent adv. until user inputs certain char.
 }
 
 int main(){
@@ -40,12 +40,10 @@ int main(){
 
     //main menu loop
     while(is_not_closed){
-        //clear terminal
-        system(CLEAR_SCREEN);
 
         //welcome texts and menu list
         printf("Self-service Train Ticketing Machine\n");
-        printf("by DK02-07 v0.0.1\n");
+        printf("by DK02_g07 (v0.0.1)\n");
 
         printf("Menu:\n");
         printf("\t1. Pemesanan.\n");
@@ -74,12 +72,15 @@ int main(){
                 is_not_closed = FALSE;
                 break;
             default:
-                printf(INPUT_ERROR);
-                pause_scr('1');
+                printf(INPUT_ERROR); printf(" Masukkan 0 untuk lanjut: ");
+                pause_scr('0');
         }
+
+        //clear terminal
+        system(CLEAR_SCREEN);
     }
 
-    system(CLEAR_SCREEN);
+    //system(CLEAR_SCREEN);
     printf("Terima kasih telah menggunakan layanan kami.");
 
     return 0;

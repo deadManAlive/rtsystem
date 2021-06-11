@@ -1,7 +1,7 @@
+//aliases, structs, and datas used by all mechanics
+
 #ifndef GENERICS_H
 #define GENERICS_H
-
-//all aliases, structs, and datas used by all parts
 
 //OS command compatibility
 #ifdef _WIN32
@@ -16,10 +16,10 @@
 #define bool unsigned int
 
 //type aliases, for readibility too hopefully
-typedef unsigned long int distance_meter; //distance
 typedef unsigned int index;               //array index
 
-//error macros
-#define INPUT_ERROR "Err 001: masukkan salah! Masukkan 1 untuk lanjut: "
+//generic error macros
+#define INPUT_ERROR "Err 001: Kesalahan pada masukan!"
+#define TIME_ERROR "Err 002: Masukan data waktu diluar cakupan!"
 
 #endif
