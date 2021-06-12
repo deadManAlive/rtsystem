@@ -7,23 +7,6 @@
 #include "order.h"
 #include "simulation.h"
 
-//ORDERING DATA
-/*
-station position relative to Jakarta (Gambir)
-1. Jakarta: Gambir
-2. Cirebon: Cirebon
-3. Semarang: Poncol
-4. Surabaya: Pasar Turi
-5. Malang: Malang
-*/
-const distance_kmeter distance_list[] = {
-    0,      //Gambir
-    218,    //Cirebon
-    442,    //Semarang
-    742,    //Surabaya
-    870     //Malang
-};
-
 //temporary orders container, before simulation implementation
 Order order_list[100];
 
