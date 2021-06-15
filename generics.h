@@ -24,4 +24,6 @@ typedef unsigned int index;               //array index
 #define TIME_ERROR  "ERR 002: Masukan data waktu diluar cakupan!"
 #define STAT_ERROR  "ERR 003: Stasiun asal dan tujuan sama!"
 
+#define MAX_ORD_SIZE 100
+
 #endif

@@ -14,14 +14,23 @@ typedef struct{
     index psg_seat_x;   //dimension of...
     index psg_seat_y;   //passengers seating
 
+    //schedule
+    int hour;
+    int minute;
+    int second;
+
     //seat avalaibility array, hardest part
     bool seat_avl_arr[];
 } Train;
 
-Train* trainFactory(const char* tname, float pmult, index ncar, index seatx, index seaty); //train cstr. + seat avalaibility generator
+//train methods
+Train* trainFactory(const char* tname, float pmult, int hh, int mm, int ss, index ncar, index seatx, index seaty); //train cstr. + seat avalaibility generator
 void trainRecycle(Train* old_train); //garbage stuff(?)
 void trainMapper(const Train* a_train); //view seats
 int freeSeatCalc(const Train* a_train); //return free seats
 bool seatSetter(Train* a_train, index ncar, index seatx, index seaty); //seat setter
+
+//non train methods
+int randTimeGen(int tmin, int tmax);
 
 #endif

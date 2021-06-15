@@ -9,7 +9,7 @@
 #define PSG_DST_COEFF 7     //probability param.
 
 //train constructor and seat avalaibility gen. takes train name, price multiplier, and capacity.
-Train* trainFactory(const char* tname, float pmult, index ncar, index seatx, index seaty){
+Train* trainFactory(const char* tname, float pmult, int hh, int mm, int ss, index ncar, index seatx, index seaty){
     //train constructor
     Train* new_train = (Train*)calloc(1, sizeof(*new_train) + sizeof(int[ncar][seatx][seaty]));//intialize new_train, that points to a Train, to a pointer to allocated memory with size of new_train plus size of flexible array member seat_avl_arr, that casted to a Train pointer.
 
@@ -18,6 +18,10 @@ Train* trainFactory(const char* tname, float pmult, index ncar, index seatx, ind
     new_train->train_length = ncar;
     new_train->psg_seat_x   = seatx;
     new_train->psg_seat_y   = seaty;
+
+    new_train->hour         = hh;
+    new_train->minute       = mm;
+    new_train->second       = ss;
 
     //seat avalaibility generator
 
@@ -99,4 +103,9 @@ bool seatSetter(Train* a_train, index ncar, index seatx, index seaty){ //if seat
         (*savlptr)[ncar][seatx][seaty] = TRUE;
         return TRUE;
     }
+}
+
+int randTimeGen(int tmin, int tmax){
+    return (tmin + rand() / (RAND_MAX / (tmax - tmin + 1) + 1));
+    //better than modulus according to http://c-faq.com/lib/randrange.html
 }
