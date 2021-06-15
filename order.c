@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "order.h"
-#include "simulation.h"
 
 #define BASE_PRICE 360   //Rp. / km
 #define TRAIN_AVG_SPEED 84  //kph
@@ -269,7 +268,9 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
             printf("\t[%s]\n", tgarage[i]->train_name);
             printf("\tKeberangkatan\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year);
             printf("\tETA\t\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d) <~%.1f jam>\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900, rtime/3600);
-            printf("\tKursi tersedia\t: %d\n", freeSeatCalc(tgarage[i]));
+            printf("\tJumlah gerbong\t: %d\n", tgarage[i]->train_length);
+            printf("\tSeat per gerbong\t: %d\n", tgarage[i]->psg_seat_x * tgarage[i]->psg_seat_y);
+            printf("\tSeat tersedia\t: %d\n", freeSeatCalc(tgarage[i]));
             printf("\tOngkos\t\t: Rp.%.2f\n\n", tgarage[i]->price_multiplier * BASE_PRICE * route_distance);
         }
 
@@ -277,8 +278,10 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
 
         scanf("%u", &optptr);
 
+        --optptr; //index adj.
+
         //input checker
-        if(optptr < 1 || optptr > tgarage_size){
+        if(optptr < 0 || optptr >= tgarage_size){
             is_repeat = TRUE;
             printf(INPUT_ERROR);
             printf("\n");
@@ -290,9 +293,15 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
             trainless_order->hour   = tgarage[optptr]->hour;
             trainless_order->minute = tgarage[optptr]->minute;
             trainless_order->second = tgarage[optptr]->second;
-
-            tselect_menu_loop = FALSE;
         }
+
+        printf("Masukkan 1 untuk lajut, 0 untuk mengulangi: ");
+
+        getchar(); //clears buffer from '\n'(?)
+        if(getchar() == '1'){
+            //end this while loop
+            tselect_menu_loop = FALSE;
+        }//user doesn't really need to input 0 again
     }
 }
 
@@ -304,30 +313,108 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
     system(CLEAR_SCREEN);
 
     while(seat_menu_loop){
+        //menu texts
+        printf("[%s] %02d:%02d:%02d %s, %02d-%02d-%d (%d seat tersedia).\n",
+               tgarage[seatless_order->train_index]->train_name,
+               seatless_order->hour,
+               seatless_order->minute,
+               seatless_order->second,
+               seatless_order->day,
+               seatless_order->date,
+               seatless_order->month,
+               seatless_order->year,
+               freeSeatCalc(tgarage[seatless_order->train_index])
+        );
+        printf("Pilihan seat yang tersedia:\n\n");
+
+        char ncl;   //car char container
+        int scar;   //car number
+        int scol;   //input column (seaty) as char
+        int srow;   //input row (seatx) as int
+
+        trainMapper(tgarage[seatless_order->train_index]);
+
+        printf("Masukkan pilihan seat [gerbong kolom baris] (contoh: 2 A 5): ");
+
+        scanf("%d %c %d", &scar, &ncl, &srow);
+
+        //input validator
+        //scol
+        scol = (int)ncl;
+
+        if(scol >= 'A' && scol <= 'Z'){ //ASCII checking
+            scol -= 'A';
+        }
+        else if(scol >= 'a' && scol <= 'z'){
+            scol -= 'a';
+        }
+        else{
+            printf(INPUT_ERROR);
+            printf("\n");
+            //continue;
+        }
+
+        if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
+            printf(INPUT_ERROR);
+            printf("\n");
+            continue;
+        }
         
+        --srow;
+        if(srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
+            printf(INPUT_ERROR);
+            printf("\n");
+            continue;
+        }
+
+        --scar;
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length){
+            printf(INPUT_ERROR);
+            printf("\n");
+            continue;
+        }
+
+        //printf("scar:%d scol:%d srow:%d\n", scar, scol, srow);
+
+        if(seatSetter(tgarage[seatless_order->train_index], scar, srow, scol)){
+            system(CLEAR_SCREEN);
+            printf("Pemilihan seat berhasil!\n");
+
+            seatless_order->pcar = scar;
+            seatless_order->pseatx = srow;
+            seatless_order->pseaty = scol;
+
+            trainMapper(tgarage[seatless_order->train_index]);
+            seat_menu_loop = FALSE;
+        }
+        else{
+            printf("Gagal memilih seat...\n");
+            continue;
+        }
     }
 }
 
-Order newOrder(Order* order_list_arr, index size){
+void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
+    //summary viewer
+    printf("Ringkasan pesanan:\n");
+    printf("\tAsal\t: %s\n", station_list[props->origin_idx]);
+    printf("\tTujuan\t: %s\n", station_list[props->destination_idx]);
+    printf("\tKereta\t: %s\n", tgarage[props->train_index]->train_name);
+    printf("\tJadwal\t: %s, %02d-%02d-%d @ %02d:%02d:%02d\n", props->day, props->date, props->month, props->year, props->hour, props->minute, props->second);
+    printf("\tSeat\t: %d%c%d", props->pcar + 1, props->pseaty + 'A', props->pseatx + 1);
+}
+
+Order newOrder(Order* order_list_arr, index size, Train* train_garage[], int train_garage_size){
     Order new_order_ctr;
 
-    //array of trains
-    Train* train_garage[] = {
-        trainFactory("Ekonomi", 1.0, randTimeGen(7, 19), randTimeGen(0, 60), 0, 4, 25, 4),
-        trainFactory("Bisnis", 1.25, randTimeGen(9, 15), randTimeGen(0, 60), 0, 3, 16, 4),
-        trainFactory("Eksekutif", 1.65, randTimeGen(8, 14), randTimeGen(0, 60), 0, 3, 12, 4),
-        trainFactory("Sleeper", 1.95, randTimeGen(16, 23), randTimeGen(0, 60), 0, 3, 23, 2)
-    };
-    int train_garage_size = sizeof(train_garage)/sizeof(train_garage[0]); //the size
+    for(int i = 0; i < train_garage_size; i++){ // generates random seat occupation on every order
+        seatAvlGenerator(train_garage[i]);
+    }
 
     printf("Pemesanan\n");
     orderDateInput(&new_order_ctr);     //call date setter func.
     orderRouteInput(&new_order_ctr);    //call route setter func.
     trainSelector(&new_order_ctr, train_garage, train_garage_size); //call train setter func.
-    //seatSelector(&new_order_ctr, train_garage, train_garage_size);  //seat setter and final function.
-
-    //free unused trains
-    for(index i = 0; i < train_garage_size; i++){
-        trainRecycle(train_garage[i]);
-    }
+    seatSelector(&new_order_ctr, train_garage, train_garage_size);  //seat setter.
+    finalizeOrder(&new_order_ctr, train_garage, train_garage_size);
 }

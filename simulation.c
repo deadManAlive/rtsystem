@@ -23,23 +23,25 @@ Train* trainFactory(const char* tname, float pmult, int hh, int mm, int ss, inde
     new_train->minute       = mm;
     new_train->second       = ss;
 
+    return new_train;
+}
+
+void seatAvlGenerator(Train* a_train){
     //seat avalaibility generator
 
     srand(time(NULL));
 
-    bool(*savlptr)[new_train->train_length][new_train->psg_seat_x][new_train->psg_seat_y] = (bool(*)[new_train->train_length][new_train->psg_seat_x][new_train->psg_seat_y]) new_train->seat_avl_arr;
+    bool(*savlptr)[a_train->train_length][a_train->psg_seat_x][a_train->psg_seat_y] = (bool(*)[a_train->train_length][a_train->psg_seat_x][a_train->psg_seat_y]) a_train->seat_avl_arr;
 
     //intialize an 3d array of pointer that points to seat_avl_arr member, that casted to a 3d array of pointer of type bool.
 
-    for(index incar = 0; incar < new_train->train_length; incar++){
-        for(index iseatx = 0; iseatx < new_train->psg_seat_x; iseatx++){
-            for(index iseaty = 0; iseaty < new_train->psg_seat_y; iseaty++){
+    for(index incar = 0; incar < a_train->train_length; incar++){
+        for(index iseatx = 0; iseatx < a_train->psg_seat_x; iseatx++){
+            for(index iseaty = 0; iseaty < a_train->psg_seat_y; iseaty++){
                 (*savlptr)[incar][iseatx][iseaty] = (rand() < RAND_MAX/PSG_DST_COEFF); //random boolean generator, probability set by RAND_MAX divisor
             }
         }
     }
-
-    return new_train;
 }
 
 void trainRecycle(Train* old_train){
@@ -60,13 +62,14 @@ void trainMapper(const Train* a_train){
         }
         printf("\n\n");
         for(index iseatx = 0; iseatx < a_train->psg_seat_x; iseatx++){
+            printf("%d\t", iseatx + 1);
             for(index iseaty = 0; iseaty < a_train->psg_seat_y; iseaty++){
                 if(a_train->psg_seat_y%2 == 0){
                     if(iseaty == a_train->psg_seat_y/2){
                         printf("\t");
                     }
                 }
-                printf("[%c] ", (*sseek)[incar][iseatx][iseaty]?'x':' ');
+                printf("[%c] ", ((*sseek)[incar][iseatx][iseaty] == 1)?'x':((*sseek)[incar][iseatx][iseaty] == 0)?' ':'Y');
             }
             printf("\n");
         }
@@ -100,7 +103,7 @@ bool seatSetter(Train* a_train, index ncar, index seatx, index seaty){ //if seat
         return FALSE;
     }
     else{
-        (*savlptr)[ncar][seatx][seaty] = TRUE;
+        (*savlptr)[ncar][seatx][seaty] = -1;
         return TRUE;
     }
 }

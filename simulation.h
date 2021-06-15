@@ -12,7 +12,7 @@ typedef struct{
     //train dimension
     index train_length; //number of cars
     index psg_seat_x;   //dimension of...
-    index psg_seat_y;   //passengers seating
+    index psg_seat_y;   //passengers seating, these start at 1
 
     //schedule
     int hour;
@@ -25,6 +25,7 @@ typedef struct{
 
 //train methods
 Train* trainFactory(const char* tname, float pmult, int hh, int mm, int ss, index ncar, index seatx, index seaty); //train cstr. + seat avalaibility generator
+void seatAvlGenerator(Train* a_train);
 void trainRecycle(Train* old_train); //garbage stuff(?)
 void trainMapper(const Train* a_train); //view seats
 int freeSeatCalc(const Train* a_train); //return free seats
