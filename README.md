@@ -11,7 +11,7 @@ Download repository as ZIP or clone with Git.
 	```
 	The executable (or .sln file) would be available in the `build` folder.
 * directly using compiler
-	use clang (or gcc): `clang -o rtsystem.c order.c simulation.c`
+	use clang (or gcc): `clang -o rtsystem.exe rtsystem.c order.c simulation.c`
 * Using IDE (Dev-C++)
 	1. Menu `File` > `New` > `Project...`
 	2. Set as `Console Application`

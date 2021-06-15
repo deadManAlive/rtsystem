@@ -13,13 +13,15 @@
 //bool macros, for readibility
 #define TRUE  1
 #define FALSE 0
-#define bool unsigned int
+#define UNKNOWN -1 //in case three-state logic needed
+#define bool int
 
 //type aliases, for readibility too hopefully
 typedef unsigned int index;               //array index
 
 //generic error macros
-#define INPUT_ERROR "Err 001: Kesalahan pada masukan!"
-#define TIME_ERROR "Err 002: Masukan data waktu diluar cakupan!"
+#define INPUT_ERROR "ERR 001: Kesalahan pada masukan!"
+#define TIME_ERROR  "ERR 002: Masukan data waktu diluar cakupan!"
+#define STAT_ERROR  "ERR 003: Stasiun asal dan tujuan sama!"
 
 #endif

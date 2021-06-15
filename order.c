@@ -3,19 +3,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+#include <math.h>
 
 #include "order.h"
+#include "simulation.h"
+
+#define BASE_PRICE 420   //Rp. / km
+#define TRAIN_AVG_SPEED 60  //kph
+
 
 //ordering vars
 const char* day_name[] = {"Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"};
 
-//station list by distance from Gambir, pretty scalable in linear branchless route model.
+//station list by distance from Gambir
 const distance_kmeter distance_list[] = {
     0,      //0. Gambir
     218,    //1. Cirebon
     442,    //2. Semarang
     742,    //3. Surabaya
     870     //4. Malang
+};
+
+const char *station_list[] = {
+    "Gambir",
+    "Cirebon",
+    "Semarang",
+    "Surabaya",
+    "Malang"
 };
 
 void orderDateInput(Order* dateless_order){
@@ -26,6 +41,8 @@ void orderDateInput(Order* dateless_order){
     //GET current time
     time_t t = time(NULL);
     struct tm current_time = *localtime(&t); //months, days in week, days in year start at 0, years start at 1900
+
+    system(CLEAR_SCREEN);
 
     while(date_menu_loop){
         printf("Masukkan tanggal keberangkatan (dd m yyyy): ");
@@ -38,6 +55,11 @@ void orderDateInput(Order* dateless_order){
             printf(INPUT_ERROR); printf("\n");
             continue;
         } //or just absolutize these values...?
+
+        //if two digit number entered as year
+        if(yr < 100){
+            yr += 2000;
+        }
         
         bool is_leap_year = (yr % 400 == 0)? TRUE : FALSE; //initialize leap year boole by checking if it's centurial leap year
         if(!is_leap_year){ //if it's not centurial leap year...
@@ -114,6 +136,7 @@ void orderDateInput(Order* dateless_order){
             dateless_order->date   = dt;
             dateless_order->month  = mt;
             dateless_order->year   = yr;
+            strcpy(dateless_order->day, day_name[departure_time.tm_wday]);
 
             //end this while loop
             date_menu_loop = FALSE;
@@ -121,13 +144,18 @@ void orderDateInput(Order* dateless_order){
     }
 }
 
-void station_list(char* list_head){
+void station_list_and_ask(const char* list_head){ //unnecessary, but helps scalability
         printf("Pilihan stasiun %s: \n", list_head);
+        for(index i = 0; i < (sizeof(distance_list)/sizeof(int)); i++){
+            printf("\t%u.%s\n", i + 1, station_list[i]);
+        }
+        /*
         printf("\t1.Jakarta\n");
         printf("\t2.Cirebon\n");
         printf("\t3.Semarang\n");
         printf("\t4.Surabaya\n");
         printf("\t5.Malang\n");
+        */
         printf("Pilihan: ");
     }
 
@@ -137,16 +165,83 @@ void orderRouteInput(Order* routeless_order){
     index org; //origin station option container
     index dst; //dest. station opt. ctr.
 
-    //menu texts
-    station_list("asal");
+    system(CLEAR_SCREEN);
+
+    //menu loop
+    while(route_menu_loop){
+        //origin
+        station_list_and_ask("asal");
+        scanf("%u", &org);
+        //dest.
+        station_list_and_ask("tujuan");
+        scanf("%u", &dst);
+
+        //index adjustment
+        --org;
+        --dst;
+
+        //check if input is valid
+        if(org > sizeof(distance_list) || dst > sizeof(distance_list)){
+            printf(INPUT_ERROR);
+            continue;
+        }
+        else if(org == dst){
+            printf(STAT_ERROR);
+            continue;
+        }
+        else{
+            routeless_order->origin_idx = org;
+            routeless_order->destination_idx = dst;
+
+            route_menu_loop = FALSE;
+        }
+
+        printf("Pesanan:\n");
+        printf("\tTanggal:\t");
+        printf("%s, %d-%d-%d.\n", routeless_order->day, routeless_order->date, routeless_order->month, routeless_order->year);
+        printf("\tStasiun asal:\t%s.\n", station_list[routeless_order->origin_idx]);
+        printf("\tStasiun tujuan:\t%s.", station_list[routeless_order->destination_idx]);
+    }
+}
+
+void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
+    //train select vars.
+    bool tselect_menu_loop = TRUE;
+
+    system(CLEAR_SCREEN);
+
+    while(tselect_menu_loop){
+        printf("Pilihan kereta:\n\n");
+        for(index i = 0; i < tgarage_size; i++){
+            printf("Kereta #%d:\n", i + 1);
+            printf("\t[%s]\n", tgarage[i]->train_name);
+            printf("\tKursi tersedia\t:%d\n", freeSeatCalc(tgarage[i]));
+            printf("\tOngkos\t\t:Rp.%.2f\n", tgarage[i]->price_multiplier * BASE_PRICE * abs(distance_list[trainless_order->destination_idx] - distance_list[trainless_order->origin_idx]));
+        }
+
+        tselect_menu_loop = FALSE;
+    }
 }
 
 Order newOrder(Order* order_list_arr, index size){
     Order new_order_ctr; //new order container
 
-    system(CLEAR_SCREEN);
+    //array of trains
+    Train* train_garage[] = {
+        trainFactory("Ekonomi", 1.0, 4, 25, 4),
+        trainFactory("Bisnis", 1.25, 3, 16, 4),
+        trainFactory("Eksekutif", 1.65, 3, 12, 4),
+        trainFactory("Sleeper", 1.95, 3, 12, 2)
+    };
+    int train_garage_size = sizeof(train_garage)/sizeof(train_garage[0]); //the size
 
     printf("Pemesanan\n");
     orderDateInput(&new_order_ctr);     //call date setter func.
     orderRouteInput(&new_order_ctr);    //call route setter func.
+    trainSelector(&new_order_ctr, train_garage, train_garage_size); //call train setter func.
+
+    //free unused trains
+    for(index i = 0; i < train_garage_size; i++){
+        trainRecycle(train_garage[i]);
+    }
 }

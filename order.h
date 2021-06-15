@@ -8,8 +8,11 @@ typedef unsigned long int distance_kmeter; //distance
 
 //order struct :D
 typedef struct{
-    //usable in array, hopefully.
+    //usable in array.
     bool is_occupied;
+    //dependent members
+    unsigned long int price; //dependept parameters, set in newOrder func[!!!]
+    char order_ID[12];  //set at ordering. used when user recheck for order (ddmmyyhhmm[train_init])
     
     //Identity parameters
     char name[50];
@@ -21,17 +24,15 @@ typedef struct{
     index destination_idx;
 
     //date
+    char day[10];
     int date;   
     int month;
     int year;
     
-    //?
-    unsigned long int price; //dependept parameters, set in newOrder func[!!!]
-    unsigned int order_num;  //set at ordering, count all passengers?
 } Order;
 
 //functions
 Order newOrder(Order* order_list_arr, index size); //Pemesanan, by main menu #1
-bool searchOrder(Order order_ctr, unsigned int order_number); //order search by order_num
+bool searchOrder(Order order_ctr, const char* order_ID); //order search by order_num
 
 #endif

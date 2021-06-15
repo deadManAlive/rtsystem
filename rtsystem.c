@@ -21,6 +21,8 @@ int main(){
     bool is_not_closed = TRUE;  //main menu loop bool
     char buf[50];               //bufferplaceholder
 
+    system(CLEAR_SCREEN);
+
     //main menu loop
     while(is_not_closed){
 
