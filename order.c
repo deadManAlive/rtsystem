@@ -9,9 +9,9 @@
 #include "order.h"
 #include "simulation.h"
 
-#define BASE_PRICE 420   //Rp. / km
-#define TRAIN_AVG_SPEED 82  //kph
-#define ETA_DEV_PCT 0.16 //probability/coefficient of route time calculation deviation
+#define BASE_PRICE 360   //Rp. / km
+#define TRAIN_AVG_SPEED 84  //kph
+#define ETA_DEV_PCT 0.36 //probability/coefficient of route time calculation deviation
 
 
 //ordering vars
@@ -212,10 +212,14 @@ void orderRouteInput(Order* routeless_order){
     }
 }
 
-void trainSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
+void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
     //train select vars.
     bool tselect_menu_loop = TRUE;
-    index tptr; //opt. container
+    index optptr; //opt. container
+
+    //to supress certain randomness
+    bool is_repeat = FALSE; //bool for wheter the menu loop happens after an error in input
+    int eta_ctr[tgarage_size]; //contains previous value of eta time value
 
     //GET current time
     time_t now = time(NULL);
@@ -225,14 +229,15 @@ void trainSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
 
     while(tselect_menu_loop){
         printf("Pilihan kereta\n");
-        printf("Untuk %s, %d-%d-%d dari %s menuju %s:\n\n", seatless_order->day, seatless_order->date, seatless_order->month, seatless_order->year, station_list[seatless_order->origin_idx], station_list[seatless_order->destination_idx]);
+        printf("Untuk %s, %d-%d-%d dari %s menuju %s:\n\n", trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year, station_list[trainless_order->origin_idx], station_list[trainless_order->destination_idx]);
+
         for(index i = 0; i < tgarage_size; i++){
             //ETA analysis
             //generate time struct for departure
             struct tm ttime = {
-                .tm_year    = seatless_order->year - 1900,
-                .tm_mon     = seatless_order->month - 1,
-                .tm_mday    = seatless_order->date,
+                .tm_year    = trainless_order->year - 1900,
+                .tm_mon     = trainless_order->month - 1,
+                .tm_mday    = trainless_order->date,
                 .tm_hour    = tgarage[i]->hour,
                 .tm_min     = tgarage[i]->minute,
                 .tm_sec     = tgarage[i]->second
@@ -241,27 +246,65 @@ void trainSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
 
             //ETA calculation
 
-            int route_distance = abs(distance_list[seatless_order->destination_idx] - distance_list[seatless_order->origin_idx]);
-            int route_est_time_seconds = 3600*(float)route_distance/TRAIN_AVG_SPEED;
+            int route_distance = abs(distance_list[trainless_order->destination_idx] - distance_list[trainless_order->origin_idx]);
+            int route_est_time_seconds; //the eta time
 
-            //add deviation to route_est_time_seconds
-
-            route_est_time_seconds = randTimeGen((1.0 - ETA_DEV_PCT/2) * route_est_time_seconds, (1.0 + ETA_DEV_PCT/2) * route_est_time_seconds);
+            if(!is_repeat){ //if current cycle is not one after input error, eta time randomized as usual
+                route_est_time_seconds = 3600*(float)route_distance/TRAIN_AVG_SPEED;
+                route_est_time_seconds = randTimeGen((1.0 - 0.25*ETA_DEV_PCT) * route_est_time_seconds, (1.0 + 0.75*ETA_DEV_PCT) * route_est_time_seconds); //weight deviation range to more late than early by 1:3.
+                eta_ctr[i] = route_est_time_seconds; //this stores current eta time
+            }
+            else{ //if current loop happens after input error, eta time DOES NOT randomized. assigned to value on previous cycle instead
+                route_est_time_seconds = eta_ctr[i];
+            }
 
             //ETA
-            time_t eta_second = dtime + (time_t)route_est_time_seconds;
+            time_t eta_second = dtime + (time_t)route_est_time_seconds; //eta time value
             struct tm eta_time = *localtime(&eta_second);
+
+            float rtime = difftime(eta_second, dtime);
             
             //view train spesc.
-            printf("Kereta #%d:\n", i + 1);
+            printf("%d:", i + 1);
             printf("\t[%s]\n", tgarage[i]->train_name);
-            printf("\tKeberangkatan\t: %02d:%02d:%02d (%-7s,%d-%d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, seatless_order->day, seatless_order->date, seatless_order->month, seatless_order->year);
-            printf("\tETA\t\t: %02d:%02d:%02d (%-7s,%d-%d-%d)\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900);
+            printf("\tKeberangkatan\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year);
+            printf("\tETA\t\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d) <~%.1f jam>\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900, rtime/3600);
             printf("\tKursi tersedia\t: %d\n", freeSeatCalc(tgarage[i]));
-            printf("\tOngkos\t\t: Rp.%.2f\n", tgarage[i]->price_multiplier * BASE_PRICE * route_distance);
+            printf("\tOngkos\t\t: Rp.%.2f\n\n", tgarage[i]->price_multiplier * BASE_PRICE * route_distance);
         }
 
-        tselect_menu_loop = FALSE;
+        printf("pilihan kereta (1-%d): ", tgarage_size);
+
+        scanf("%u", &optptr);
+
+        //input checker
+        if(optptr < 1 || optptr > tgarage_size){
+            is_repeat = TRUE;
+            printf(INPUT_ERROR);
+            printf("\n");
+            continue;
+        }
+        else{
+            trainless_order->train_index = optptr;
+
+            trainless_order->hour   = tgarage[optptr]->hour;
+            trainless_order->minute = tgarage[optptr]->minute;
+            trainless_order->second = tgarage[optptr]->second;
+
+            tselect_menu_loop = FALSE;
+        }
+    }
+}
+
+void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
+    //this func vars.
+    bool seat_menu_loop = TRUE;
+    int optptr;
+
+    system(CLEAR_SCREEN);
+
+    while(seat_menu_loop){
+        
     }
 }
 
@@ -281,6 +324,7 @@ Order newOrder(Order* order_list_arr, index size){
     orderDateInput(&new_order_ctr);     //call date setter func.
     orderRouteInput(&new_order_ctr);    //call route setter func.
     trainSelector(&new_order_ctr, train_garage, train_garage_size); //call train setter func.
+    //seatSelector(&new_order_ctr, train_garage, train_garage_size);  //seat setter and final function.
 
     //free unused trains
     for(index i = 0; i < train_garage_size; i++){
