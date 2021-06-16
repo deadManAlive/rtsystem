@@ -6,7 +6,7 @@
 
 #include "simulation.h"
 
-#define PSG_DST_COEFF 7     //probability param.
+#define PSG_DST_COEFF 4     //probability param. the bigger the lesser occupied seat would be.
 
 //train constructor and seat avalaibility gen. takes train name, price multiplier, and capacity.
 Train* trainFactory(const char* tname, float pmult, int hh, int mm, int ss, index ncar, index seatx, index seaty){
@@ -53,7 +53,7 @@ void trainMapper(const Train* a_train){
     
     for(index incar = 0; incar < a_train->train_length; incar++){
         printf("Gerbong %d\n", incar + 1);
-        printf("\t");
+        printf("\t ");
         for(int i = 0; i < a_train->psg_seat_y; i++){
             if(i == a_train->psg_seat_y/2){
                 printf("\t");
@@ -62,16 +62,16 @@ void trainMapper(const Train* a_train){
         }
         printf("\n\n");
         for(index iseatx = 0; iseatx < a_train->psg_seat_x; iseatx++){
-            printf("%d\t", iseatx + 1);
+            printf("%d\t|", iseatx + 1);
             for(index iseaty = 0; iseaty < a_train->psg_seat_y; iseaty++){
                 if(a_train->psg_seat_y%2 == 0){
                     if(iseaty == a_train->psg_seat_y/2){
                         printf("\t");
                     }
                 }
-                printf("[%c] ", ((*sseek)[incar][iseatx][iseaty] == 1)?'x':((*sseek)[incar][iseatx][iseaty] == 0)?' ':'Y');
+                printf("%s ", ((*sseek)[incar][iseatx][iseaty] == TRUE)?"[x]":((*sseek)[incar][iseatx][iseaty] == FALSE)?"[ ]":"!#!");
             }
-            printf("\n");
+            printf("\b|\n");
         }
         printf("\n");
     }
@@ -96,14 +96,14 @@ int freeSeatCalc(const Train* a_train){
     return free_seat_sum;
 }
 
-bool seatSetter(Train* a_train, index ncar, index seatx, index seaty){ //if seat occupied, return FALSE. else set seat TRUE and return TRUE.
+bool seatSetter(Train* a_train, int seat_condition, index ncar, index seatx, index seaty){ //return FALSE if seat occupied (TRUE). else fill seat with provided condition
     bool(*savlptr)[a_train->train_length][a_train->psg_seat_x][a_train->psg_seat_y] = (bool(*)[a_train->train_length][a_train->psg_seat_x][a_train->psg_seat_y]) a_train->seat_avl_arr;
 
     if((*savlptr)[ncar][seatx][seaty] == TRUE){
         return FALSE;
     }
     else{
-        (*savlptr)[ncar][seatx][seaty] = -1;
+        (*savlptr)[ncar][seatx][seaty] = seat_condition;
         return TRUE;
     }
 }

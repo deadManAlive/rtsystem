@@ -10,11 +10,6 @@
 //order containers
 Order order_list[MAX_ORD_SIZE] = {0};
 
-//pause screen function
-void pause_scr(char char_to_press){
-    while (getchar() != char_to_press); //prevent adv. until user inputs certain char.
-}
-
 int main(){
     //global vars
     int menu_opt;               //menu choice container
@@ -53,7 +48,6 @@ int main(){
             case 1:
                 //Pemesanan
                 newOrder(order_list, 100, train_garage, train_garage_size);
-                pause_scr('0');
                 break;
             case 2:
                 //Lihat pesanan

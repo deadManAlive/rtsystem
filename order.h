@@ -9,7 +9,11 @@ typedef unsigned long int distance_kmeter; //distance
 
 //order struct :D
 typedef struct{
-    bool is_occupied; //migh usable in array.
+    //struct occupation validation param.
+    //type is long to contains RAND_MAX value
+    //probability of same L-R value = 1/(RAND_MAX^2) = 2 * 10^-17.
+    long is_occupied_L;
+    long is_occupied_R;
     
     //order
     unsigned long int price; //dependept parameters, set in newOrder func[!!!]
@@ -41,7 +45,7 @@ typedef struct{
 } Order;
 
 //functions
-Order newOrder(Order* order_list_arr, index size, Train* train_garage[], int train_garage_size); //Pemesanan, by main menu #1
-bool searchOrder(Order order_ctr, const char* order_ID); //order search by order_num
+void newOrder(Order* order_list_arr, index size, Train* train_garage[], int train_garage_size); //Pemesanan, by main menu #1
+int searchOrder(Order order_ctr, const char* order_ID); //order search by order_num
 
 #endif

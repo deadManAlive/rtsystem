@@ -29,7 +29,7 @@ void seatAvlGenerator(Train* a_train);
 void trainRecycle(Train* old_train); //garbage stuff(?)
 void trainMapper(const Train* a_train); //view seats
 int freeSeatCalc(const Train* a_train); //return free seats
-bool seatSetter(Train* a_train, index ncar, index seatx, index seaty); //seat setter
+bool seatSetter(Train* a_train, int seat_condition, index ncar, index seatx, index seaty); //seat setter
 
 //non train methods
 int randTimeGen(int tmin, int tmax);
