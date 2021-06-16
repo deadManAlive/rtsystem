@@ -465,6 +465,7 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
                 break;
             case 4:
                 trainSelector(props, tgarage, tgarage_size);
+                seatSelector(props, tgarage, tgarage_size); //must change seat if change train
                 break;
             case 5:
                 seatSelector(props, tgarage, tgarage_size);
