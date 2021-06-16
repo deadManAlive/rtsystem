@@ -448,9 +448,9 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
         switch(optvar){
             case 1:
                 printf("Masukkan nama\t\t: ");
-                scanf("%s", &name);
+                scanf("%s", name);
                 printf("Masukkan no telp.\t: ");
-                scanf("%s", &phone);
+                scanf("%s", phone);
 
                 strcpy(props->name, name);
                 strcpy(props->phone_num, phone);
@@ -588,3 +588,49 @@ void newOrder(Order order_list_arr[], index order_arr_size, Train* train_garage[
 
     order_list_arr[posarr] = new_order_ctr; //assign new order to provided position in array
 }
+
+void searchOrder(Order order_list_arr[], index size, Train* train_garage[], int train_garage_size){
+    system(CLEAR_SCREEN);
+
+    char ordID[20];
+
+    printf("Lihat Pesanan\n\n");
+
+    printf("Masukkan ID pesanan: ");
+
+    scanf("%s", ordID);
+
+    for(int i = 0; i < size; i++){
+        if(strcmp(order_list_arr[i].order_ID, ordID) == 0){
+            ticketView(&order_list_arr[i], i, train_garage, train_garage_size);
+        }
+    }
+}
+
+void listOrders(Order order_list_arr[], index size){
+    system(CLEAR_SCREEN);
+
+    printf("DEBUG TOOLS\n");
+    printf("ORDER LIST:\n\n");
+
+    index idx = 0;
+
+    while(idx < size){
+        long lkey = order_list_arr[idx].is_occupied_L;
+        long rkey = order_list_arr[idx].is_occupied_R;
+
+        if(lkey != rkey){break;}            //assert lkey == rkey
+        if(lkey <= 0 || rkey <= 0){break;}  //assert lkey > 0 && rkey > 0
+
+        printf("===========================================================\n");
+        printf("order #%09d [%16s] <%-20s>.\n", idx + 1, order_list_arr[idx].order_ID, order_list_arr[idx].name);
+        printf("===========================================================\n\n");
+
+        idx++;
+    }
+
+    printf("TOTAL ORDERS: %d\n", idx);
+    printf("INPUT X TO CONTINUE: ");
+    pause_scr('X');
+}
+

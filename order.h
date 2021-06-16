@@ -46,6 +46,9 @@ typedef struct{
 
 //functions
 void newOrder(Order* order_list_arr, index size, Train* train_garage[], int train_garage_size); //Pemesanan, by main menu #1
-int searchOrder(Order order_ctr, const char* order_ID); //order search by order_num
+
+void searchOrder(Order* order_list_arr, index size, Train* train_garage[], int train_garage_size); //order search by order_num
+
+void listOrders(Order* order_list_arr, index size);
 
 #endif

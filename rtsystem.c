@@ -38,7 +38,8 @@ int main(){
         printf("Menu:\n");
         printf("\t1. Pemesanan.\n");
         printf("\t2. Lihat pesanan.\n");
-        printf("\t3. Bantuan.\n");
+        printf("\t3. Daftar pesanan.\n");
+        printf("\t4. Bantuan.\n");
         printf("\t0. Keluar\n");
         printf("Masukan pilihan: ");
 
@@ -47,15 +48,26 @@ int main(){
         switch(menu_opt){
             case 1:
                 //Pemesanan
-                newOrder(order_list, 100, train_garage, train_garage_size);
+                newOrder(order_list, MAX_ORD_SIZE, train_garage, train_garage_size);
                 break;
             case 2:
                 //Lihat pesanan
-                pause_scr('0');
+                searchOrder(order_list, MAX_ORD_SIZE, train_garage, train_garage_size);
                 break;
             case 3:
-                //bantuan
-                pause_scr('0');
+                //daftar pesanan
+                listOrders(order_list, MAX_ORD_SIZE);
+                break;
+            case 4:
+                {
+                    system(CLEAR_SCREEN);
+
+                    printf("This source code is made by DK02_g07 as final programming assignment in Even Semester\n2020/2021 for course Basic Computer + Lab. (ENEE603014) in Undergraduate of\nElectrical Engineering study program, Department of Electrical Engineering, Faculty of\nEngineering, Universitas Indonesia.");
+
+                    printf("INPUT X TO CONTINUE: ");
+
+                    pause_scr('X');
+                }
                 break;
             case 0:
                 is_not_closed = FALSE;
