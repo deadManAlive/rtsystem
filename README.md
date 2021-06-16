@@ -1,5 +1,5 @@
 # Self-Service Train Ticketing System
-A console C program that simulates train ticketing system. Language is Indonesian.
+A console C program that simulates train ticketing system. Divided into two main parts: ordering mechaincs and simulation mechanics. Ordering mechanics handle implementation of order as a struct to write, read, and process further. Simulation mechanics provide randomization to seating and schedule. Program language is Indonesian.
 ## How To Build
 Download repository as ZIP or clone with Git.
 * using cmake
