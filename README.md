@@ -1,5 +1,8 @@
 # Self-Service Train Ticketing System
 A console C program that simulates train ticketing system. Divided into two main parts: ordering mechanics and simulation mechanics. Ordering mechanics handle implementation of order as a struct to write, read, and process further. Simulation mechanics provide randomization to seating and schedule. Program language is Indonesian.
+
+>This source code is made by DK02_g07 as final programming assignment in Even Semester 2020/2021 for course Basic Computer + Lab. (ENEE603014) in Undergraduate of Electrical Engineering study program, Department of Electrical Engineering, Faculty of Engineering, Universitas Indonesia.
+
 ## How To Build
 Download repository as ZIP or clone with Git.
 * using cmake
@@ -23,4 +26,4 @@ Download repository as ZIP or clone with Git.
 	8. Select all the source codes (ends with `.h` and `.c`)
 	9. Compile program.
 
-Or just download the precompiled binary.
+Or just download the precompiled binary on https://github.com/deadManAlive/rtsystem/releases/latest
