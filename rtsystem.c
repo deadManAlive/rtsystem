@@ -64,6 +64,8 @@ int main(){
 
                     printf("This source code is made by DK02_g07 as final programming assignment in Even Semester\n2020/2021 for course Basic Computer + Lab. (ENEE603014) in Undergraduate of\nElectrical Engineering study program, Department of Electrical Engineering, Faculty of\nEngineering, Universitas Indonesia.");
 
+                    printf("\n\n");
+
                     printf("INPUT X TO CONTINUE: ");
 
                     pause_scr('X');
