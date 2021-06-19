@@ -447,8 +447,9 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
 
         switch(optvar){
             case 1:
+                getchar(); //catch wild "\n"
                 printf("Masukkan nama\t\t: ");
-                scanf("%s", name);
+                scanf("%[^\n]%*c", name);
                 printf("Masukkan no telp.\t: ");
                 scanf("%s", phone);
 
@@ -538,7 +539,7 @@ void ticketView(Order* props, int ord_idx, Train* tgarage[], int tgarage_size){
 
     printf("# %09d%*c\n", ord_idx + 1, 39, '#');
     printf("# ID pesanan    : %s%*c\n", props->order_ID, 50 - (int)strlen(props->order_ID) - 18, '#');
-    printf("# Nama          : %s%*c\n", props->name, 50 - (int)strlen(props->name) - 18, '#');
+    printf("# Nama          : %-20.20s%*c\n", props->name, 12, '#');
     printf("# Telepon       : %s%*c\n", props->phone_num, 50 - (int)strlen(props->phone_num) - 18, '#');
     printf("# %*c\n", 48, '#');
     printf("# Asal          : %s%*c\n", station_list[props->origin_idx], 50 - (int)strlen(station_list[props->origin_idx]) - 18, '#');
@@ -604,8 +605,12 @@ void searchOrder(Order order_list_arr[], index size, Train* train_garage[], int 
     for(int i = 0; i < size; i++){
         if(strcmp(order_list_arr[i].order_ID, ordID) == 0){
             ticketView(&order_list_arr[i], i, train_garage, train_garage_size);
+            return;
         }
     }
+
+    printf("ID NOT FOUND!\n INPUT X TO EXIT: ");
+    pause_scr('X');
 }
 
 void listOrders(Order order_list_arr[], index size){
