@@ -629,7 +629,7 @@ void listOrders(Order order_list_arr[], index size){
         if(lkey <= 0 || rkey <= 0){break;}  //assert lkey > 0 && rkey > 0
 
         printf("===========================================================\n");
-        printf("order #%09d [%16s] <%-20s>.\n", idx + 1, order_list_arr[idx].order_ID, order_list_arr[idx].name);
+        printf("order #%09d [%16s] <%-20.20s>.\n", idx + 1, order_list_arr[idx].order_ID, order_list_arr[idx].name);
         printf("===========================================================\n\n");
 
         idx++;
