@@ -33,7 +33,7 @@ int main(){
 
         //welcome texts and menu list
         printf("Self-service Train Ticketing Machine\n");
-        printf("by DK02_g07 (v0.0.1)\n");
+        printf("by DK02_g07 (v1.0.0)\n");
 
         printf("Menu:\n");
         printf("\t1. Pemesanan.\n");
@@ -85,6 +85,10 @@ int main(){
 
     //system(CLEAR_SCREEN);
     printf("Terima kasih telah menggunakan layanan kami.");
+
+    getchar(); //clears '\n'
+
+    while (getchar() != '\n');
 
     return 0;
 }
