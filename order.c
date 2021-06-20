@@ -43,7 +43,7 @@ void orderDateInput(Order* dateless_order){
     struct tm current_time = *localtime(&now); //months, days in week, days in year start at 0, years start at 1900
 
     while(date_menu_loop){
-        printf("Masukkan tanggal keberangkatan (dd m yyyy): ");
+        printf("Masukkan tanggal keberangkatan (dd mm yyyy): ");
         scanf("%d%d%d", &dt, &mt, &yr);
 
         //date checking alg.
@@ -130,7 +130,7 @@ void orderDateInput(Order* dateless_order){
         struct tm departure_time = {.tm_mday = dt, .tm_mon = mt - 1, .tm_year = yr - 1900, .tm_isdst = -1};
         mktime(&departure_time);
 
-        printf("Tanggal yg dipilih: %s, %d-%d-%d.\nMasukkan 1 untuk lanjut, 0 untuk mengulang: ", day_name[departure_time.tm_wday], departure_time.tm_mday, departure_time.tm_mon + 1, departure_time.tm_year + 1900);
+        printf("Tanggal yg dipilih: %s, %d-%d-%d.\n\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ", day_name[departure_time.tm_wday], departure_time.tm_mday, departure_time.tm_mon + 1, departure_time.tm_year + 1900);
         
         //loopback
         getchar(); //clears buffer from '\n'(?)
@@ -140,10 +140,21 @@ void orderDateInput(Order* dateless_order){
             dateless_order->month  = mt;
             dateless_order->year   = yr;
             strcpy(dateless_order->day, day_name[departure_time.tm_wday]);
-
+        
             //end this while loop
             date_menu_loop = FALSE;
-        }//user doesn't really need to input 0...?
+        }
+        else if(getchar() == '0'){
+            printf("\n");
+            continue; //(maaf ini gw ngasal bgt gatau masukin perintahnya apa
+        }
+        else if(getchar() == 'X'){ //niatnya kembali ke menu utama tapi mungkin salah
+            pause_scr('X');
+        }
+        else{
+            printf(INPUT_ERROR); printf("\n");
+            continue;
+        }
     }
 }
 
@@ -184,14 +195,14 @@ void orderRouteInput(Order* routeless_order){
         --dst;
 
         //check if input is valid
-        if(org > sizeof(distance_list) || dst > sizeof(distance_list)){
+        if(org > sizeof(distance_list)/sizeof(distance_list[0]) || dst > sizeof(distance_list)/sizeof(distance_list[0])){
             printf(INPUT_ERROR);
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         else if(org == dst){
             printf(STAT_ERROR);
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         else{
@@ -199,18 +210,29 @@ void orderRouteInput(Order* routeless_order){
             routeless_order->destination_idx = dst;
         }
 
-        printf("Pesanan:\n");
-        printf("\tTanggal:\t");
+        printf("\nPesanan:\n");
+        printf("\tTanggal\t: ");
         printf("%s, %d-%d-%d.\n", routeless_order->day, routeless_order->date, routeless_order->month, routeless_order->year);
-        printf("\tStasiun asal:\t%s.\n", station_list[routeless_order->origin_idx]);
-        printf("\tStasiun tujuan:\t%s.\n", station_list[routeless_order->destination_idx]);
-        printf("\nMasukkan 1 untuk lanjut, 0 untuk mengulangi: ");
+        printf("\tStasiun asal\t: %s.\n", station_list[routeless_order->origin_idx]);
+        printf("\tStasiun tujuan\t: %s.\n", station_list[routeless_order->destination_idx]);
+        printf("\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ");
 
         getchar(); //clears buffer from '\n'(?)
         if(getchar() == '1'){
             //end this while loop
             route_menu_loop = FALSE;
-        }//user doesn't really need to input 0 again
+        }
+        else if(getchar() == '0'){
+            printf("\n");
+            continue; //(maaf ini gw ngasal bgt gatau masukin perintahnya apa
+        }
+        else if(getchar() == 'X'){ //niatnya kembali ke menu utama tapi mungkin salah
+            pause_scr('X');
+        }
+        else{
+            printf(INPUT_ERROR); printf("\n");
+            continue;
+        }
     }
 }
 
@@ -273,12 +295,12 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
             //view train spesc.
             printf("%d:", i + 1);
             printf("\t[%s]\n", tgarage[i]->train_name);
-            printf("\tKeberangkatan\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year);
-            printf("\tETA\t\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d) <~%.1f jam>\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900, rtime/3600);
+            printf("\tKeberangkatan\t: %02d:%02d:%02d (%s,%02d-%02d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year);
+            printf("\tETA\t\t: %02d:%02d:%02d (%s,%02d-%02d-%d) <~%.1f jam>\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900, rtime/3600);
             printf("\tJumlah gerbong\t: %d\n", tgarage[i]->train_length);
             printf("\tJumlah seat\t: %d/%d\n", tgarage[i]->psg_seat_x * tgarage[i]->psg_seat_y, tgarage[i]->train_length * tgarage[i]->psg_seat_x * tgarage[i]->psg_seat_y);
             printf("\tSeat tersedia\t: %d\n", freeSeatCalc(tgarage[i]));
-            printf("\tOngkos\t\t: Rp.%.2f\n\n", price[i]);
+            printf("\tHarga\t\t: Rp.%.2f\n\n", price[i]);
         }
 
         printf("pilihan kereta (1-%d): ", tgarage_size);
@@ -291,7 +313,7 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
         if(optptr < 0 || optptr >= tgarage_size){
             is_repeat = TRUE;
             printf(INPUT_ERROR);
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         else{
@@ -304,13 +326,24 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
             trainless_order->price  = price[optptr];
         }
 
-        printf("Masukkan 1 untuk lanjut, 0 untuk mengulangi: ");
+        printf("\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ");
 
         getchar(); //clears buffer from '\n'(?)
         if(getchar() == '1'){
             //end this while loop
             tselect_menu_loop = FALSE;
-        }//user doesn't really need to input 0 again
+        }
+         else if(getchar() == '0'){
+            printf("\n");
+            continue; //(maaf ini gw ngasal bgt gatau masukin perintahnya apa
+        }
+        else if(getchar() == 'X'){ //niatnya kembali ke menu utama tapi mungkin salah
+            pause_scr('X');
+        }
+        else{
+            printf(INPUT_ERROR); printf("\n");
+            continue;
+        }
     }
 }
 
@@ -360,14 +393,14 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
         else{
             printf(INPUT_ERROR);
             printf(": kolom");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
 
         if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
             printf(INPUT_ERROR);
             printf(": kolom");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         
@@ -375,7 +408,7 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
         if(srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
             printf(INPUT_ERROR);
             printf(": baris");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
 
@@ -383,7 +416,35 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
         if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length){
             printf(INPUT_ERROR);
             printf(": gerbong");
-            printf("\n");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
+            printf(INPUT_ERROR);
+            printf(": kolom dan baris");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
+            printf(INPUT_ERROR);
+            printf(": gerbong dan kolom");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){
+            printf(INPUT_ERROR);
+            printf(": gerbong dan baris");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
+            printf(INPUT_ERROR);
+            printf(": gerbong, kolom, dan baris");
+            printf("\n\n");
             continue;
         }
 
@@ -399,12 +460,26 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
 
             trainMapper(tgarage[seatless_order->train_index]);
             printf("\nSeat terpilih ditandai '#'\n\n");
-            printf("Masukkan 1 untuk lanjut: ");
-            pause_scr('1');
+            printf("\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ");
+            
+            getchar(); //clears buffer from '\n'(?)
+            if(getchar() == '1'){
+                pause_scr('1');
 
-            seatSetter(tgarage[seatless_order->train_index], TRUE, scar, srow, scol); //sets DRIFT-ed seat to TRUE
+                seatSetter(tgarage[seatless_order->train_index], TRUE, scar, srow, scol); //sets DRIFT-ed seat to TRUE
 
-            seat_menu_loop = FALSE;
+                seat_menu_loop = FALSE;
+            }
+            else if(getchar() == '0'){
+                pause_scr('0'); //maaf ini gw ngasal bgt gatau masukin perintahnya apa
+            }
+            else if(getchar() == 'X'){ //niatnya kembali ke menu utama tapi mungkin (sangat sangat sangat) salah :")
+                pause_scr('X');
+            }
+            else{
+                printf(INPUT_ERROR); printf("\n");
+                continue;
+            }
         }
         else{
             printf("Gagal memilih seat...\n");
@@ -436,12 +511,13 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
         printf("\tSeat\t: %d%c%d", props->pcar + 1, props->pseaty + 'A', props->pseatx + 1);
 
         printf("\n\n#######################################################\n\n");
-        printf("\t1.Lanjut.\n");
-        printf("\t2.Perbaiki jadwal.\n");
-        printf("\t3.Perbaiki rute.\n");
-        printf("\t4.Pilih ulang kereta.\n");
-        printf("\t5.Pilih ulang seat.\n");
-        printf("Opsi: ");
+        printf("\t1. Lanjut.\n");
+        printf("\t2. Perbaiki jadwal.\n");
+        printf("\t3. Perbaiki rute.\n");
+        printf("\t4. Pilih ulang kereta.\n");
+        printf("\t5. Pilih ulang seat.\n");
+        printf("\t6. Batalkan transaksi.\n");
+        printf("\nOpsi: ");
 
         scanf("%d", &optvar);
 
@@ -471,6 +547,8 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
             case 5:
                 seatSelector(props, tgarage, tgarage_size);
                 break;
+            case 6:
+                pause_scr('6'); //kembali ke menu utama????
             default:
                 printf(INPUT_ERROR);
                 printf("Masukkan 0 untuk lanjut: ");         
@@ -550,11 +628,12 @@ void ticketView(Order* props, int ord_idx, Train* tgarage[], int tgarage_size){
     printf("# Kereta        : [%s]%*c\n", tgarage[props->train_index]->train_name, 50 - (int)strlen(tgarage[props->train_index]->train_name) - 20, '#');
     printf("# Seat          : %-2d%-2c%-2d%*c\n", props->pcar, props->pseaty + 'A', props->pseatx, 26, '#');
 
-    for(int i = 0; i < 50; i++){ //print upper border: 50 space width
+    for(int i = 0; i < 50; i++){ //print lower border: 50 space width
         printf("#");
     }
-
+  
     printf("\n\n");
+    printf("Harga tiket     : Rp.%.2f\n\n", price[i]);
     printf("Masukkan 1 untuk lanjut: ");
     pause_scr('1');
 }
