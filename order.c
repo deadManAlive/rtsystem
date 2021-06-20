@@ -398,69 +398,93 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size, boo
         --srow; //adjust index
         --scar; //adjust index
 
-        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
-            printf(INPUT_ERROR);
-            printf(": gerbong, kolom, dan baris");
-            printf("\n\n");
-            continue;
-        }
-
-        if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
-            printf(INPUT_ERROR);
-            printf(": kolom dan baris");
-            printf("\n\n");
-            continue;
-        }
-        
-        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
-            printf(INPUT_ERROR);
-            printf(": gerbong dan kolom");
-            printf("\n\n");
-            continue;
-        }
-        
-        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){
-            printf(INPUT_ERROR);
-            printf(": gerbong dan baris");
-            printf("\n\n");
-            continue;
-        }
-
         if(scol >= 'A' && scol <= 'Z'){ //ASCII checking
             scol -= 'A';
         }
         else if(scol >= 'a' && scol <= 'z'){
             scol -= 'a';
         }
-        else{
+
+        if((scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length) && (scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y) && (srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x)){ //range checking
             printf(INPUT_ERROR);
-            printf(": kolom");
+            printf(": gerbong, kolom, dan baris");
+            printf("(%c %d %c)", scar + 1, ncl, srow + 1);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
             printf("\n\n");
             continue;
         }
 
-        if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
+        else if((scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y) && (srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x)){ //range checking
             printf(INPUT_ERROR);
-            printf(": kolom");
+            printf(": kolom dan baris");
+            printf("(%c %d)", ncl, srow + 1);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
             printf("\n\n");
             continue;
         }
         
-        if(srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
+        else if((scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length) && (scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y)){ //range checking
+            printf(INPUT_ERROR);
+            printf(": gerbong dan kolom");
+            printf("(%d %c)", scar + 1, ncl);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
+            printf("\n\n");
+            continue;
+        }
+        
+        else if((scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length) && (srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x)){
+            printf(INPUT_ERROR);
+            printf(": gerbong dan baris");
+            printf("(%d %d)", scar + 1, srow + 1);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
+            printf("\n\n");
+            continue;
+        }
+
+        else if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
+            printf(INPUT_ERROR);
+            printf(": kolom");
+            printf("(%c)", ncl);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
+            printf("\n\n");
+            continue;
+        }
+        
+        else if(srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
             printf(INPUT_ERROR);
             printf(": baris");
+            printf("(%d)", srow + 1);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
             printf("\n\n");
             continue;
         }
 
-        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length){
+        else if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length){
             printf(INPUT_ERROR);
             printf(": gerbong");
+            printf("(%d)", scar + 1);
+            printf("\n");
+            printf("Masukkan 0 untuk lanjut: ");
+            pause_scr('0');
             printf("\n\n");
             continue;
         }
+        else{
+            printf("Kursi tersedia...\n");
+        }
 
-        
 
         if(seatSetter(tgarage[seatless_order->train_index], DRIFT, scar, srow, scol)){ //sets seat to DRIFT to detect in mapper func.
             system(CLEAR_SCREEN);
