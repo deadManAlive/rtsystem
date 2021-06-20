@@ -33,7 +33,7 @@ const char *station_list[] = {
     "Malang"
 };
 
-void orderDateInput(Order* dateless_order){
+void orderDateInput(Order* dateless_order, bool* bypass_bool){
     //function's vars
     int dt, mt, yr;         //date vars
     bool date_menu_loop = TRUE; //make loopable
@@ -43,7 +43,7 @@ void orderDateInput(Order* dateless_order){
     struct tm current_time = *localtime(&now); //months, days in week, days in year start at 0, years start at 1900
 
     while(date_menu_loop){
-        printf("Masukkan tanggal keberangkatan (dd m yyyy): ");
+        printf("Masukkan tanggal keberangkatan (dd mm yyyy): ");
         scanf("%d%d%d", &dt, &mt, &yr);
 
         //date checking alg.
@@ -130,11 +130,15 @@ void orderDateInput(Order* dateless_order){
         struct tm departure_time = {.tm_mday = dt, .tm_mon = mt - 1, .tm_year = yr - 1900, .tm_isdst = -1};
         mktime(&departure_time);
 
-        printf("Tanggal yg dipilih: %s, %d-%d-%d.\nMasukkan 1 untuk lanjut, 0 untuk mengulang: ", day_name[departure_time.tm_wday], departure_time.tm_mday, departure_time.tm_mon + 1, departure_time.tm_year + 1900);
+        printf("Tanggal yg dipilih: %s, %d-%d-%d.\n\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ", day_name[departure_time.tm_wday], departure_time.tm_mday, departure_time.tm_mon + 1, departure_time.tm_year + 1900);
         
         //loopback
         getchar(); //clears buffer from '\n'(?)
-        if(getchar() == '1'){
+        char opt_ctr;
+
+        opt_ctr = getchar();
+
+        if(opt_ctr == '1'){
             //set to new order container
             dateless_order->date   = dt;
             dateless_order->month  = mt;
@@ -143,7 +147,13 @@ void orderDateInput(Order* dateless_order){
 
             //end this while loop
             date_menu_loop = FALSE;
-        }//user doesn't really need to input 0...?
+        }
+        else if (opt_ctr == 'X'){
+            *bypass_bool = TRUE;
+
+            date_menu_loop = FALSE;
+        }
+        //user still doesn't really need to input 0 to retry...
     }
 }
 
@@ -162,7 +172,12 @@ void station_list_and_ask(const char* list_head){ //unnecessary, but helps scala
         printf("Pilihan: ");
     }
 
-void orderRouteInput(Order* routeless_order){
+void orderRouteInput(Order* routeless_order, bool* bypass_bool){
+    //calcellation impl.
+    if(*bypass_bool){
+        return;
+    }
+
     //route func. vars
     bool route_menu_loop = TRUE;
     index org; //origin station option container
@@ -184,14 +199,14 @@ void orderRouteInput(Order* routeless_order){
         --dst;
 
         //check if input is valid
-        if(org > sizeof(distance_list) || dst > sizeof(distance_list)){
+        if(org > sizeof(distance_list)/sizeof(distance_list[0]) || dst > sizeof(distance_list)/sizeof(distance_list[0])){
             printf(INPUT_ERROR);
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         else if(org == dst){
             printf(STAT_ERROR);
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         else{
@@ -199,22 +214,37 @@ void orderRouteInput(Order* routeless_order){
             routeless_order->destination_idx = dst;
         }
 
-        printf("Pesanan:\n");
-        printf("\tTanggal:\t");
+        printf("\nPesanan:\n");
+        printf("\tTanggal\t: ");
         printf("%s, %d-%d-%d.\n", routeless_order->day, routeless_order->date, routeless_order->month, routeless_order->year);
-        printf("\tStasiun asal:\t%s.\n", station_list[routeless_order->origin_idx]);
-        printf("\tStasiun tujuan:\t%s.\n", station_list[routeless_order->destination_idx]);
-        printf("\nMasukkan 1 untuk lanjut, 0 untuk mengulangi: ");
+        printf("\tStasiun asal\t: %s.\n", station_list[routeless_order->origin_idx]);
+        printf("\tStasiun tujuan\t: %s.\n", station_list[routeless_order->destination_idx]);
+        printf("\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ");
 
         getchar(); //clears buffer from '\n'(?)
-        if(getchar() == '1'){
+
+        char opt_ctr;
+        opt_ctr = getchar();
+
+        if(opt_ctr == '1'){
             //end this while loop
             route_menu_loop = FALSE;
-        }//user doesn't really need to input 0 again
+        }
+        else if(opt_ctr == 'X'){
+            *bypass_bool = TRUE;
+
+            route_menu_loop = FALSE;
+        }
+        //user still doesn't really need to input 0 again
     }
 }
 
-void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
+void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size, bool* bypass_bool){
+    //calcellation impl.
+    if(*bypass_bool){
+        return;
+    }
+
     //train select vars.
     bool tselect_menu_loop = TRUE;
     index optptr; //opt. container
@@ -273,12 +303,12 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
             //view train spesc.
             printf("%d:", i + 1);
             printf("\t[%s]\n", tgarage[i]->train_name);
-            printf("\tKeberangkatan\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year);
-            printf("\tETA\t\t: %02d:%02d:%02d (%-7s,%02d-%02d-%d) <~%.1f jam>\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900, rtime/3600);
+            printf("\tKeberangkatan\t: %02d:%02d:%02d (%s,%02d-%02d-%d)\n", tgarage[i]->hour, tgarage[i]->minute, tgarage[i]->second, trainless_order->day, trainless_order->date, trainless_order->month, trainless_order->year);
+            printf("\tETA\t\t: %02d:%02d:%02d (%s,%02d-%02d-%d) <~%.1f jam>\n", eta_time.tm_hour, eta_time.tm_min, eta_time.tm_sec, day_name[eta_time.tm_wday], eta_time.tm_mday, eta_time.tm_mon + 1, eta_time.tm_year + 1900, rtime/3600);
             printf("\tJumlah gerbong\t: %d\n", tgarage[i]->train_length);
             printf("\tJumlah seat\t: %d/%d\n", tgarage[i]->psg_seat_x * tgarage[i]->psg_seat_y, tgarage[i]->train_length * tgarage[i]->psg_seat_x * tgarage[i]->psg_seat_y);
             printf("\tSeat tersedia\t: %d\n", freeSeatCalc(tgarage[i]));
-            printf("\tOngkos\t\t: Rp.%.2f\n\n", price[i]);
+            printf("\tHarga\t\t: Rp.%.2f\n\n", price[i]);
         }
 
         printf("pilihan kereta (1-%d): ", tgarage_size);
@@ -291,7 +321,7 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
         if(optptr < 0 || optptr >= tgarage_size){
             is_repeat = TRUE;
             printf(INPUT_ERROR);
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         else{
@@ -304,17 +334,33 @@ void trainSelector(Order* trainless_order, Train* tgarage[], int tgarage_size){
             trainless_order->price  = price[optptr];
         }
 
-        printf("Masukkan 1 untuk lanjut, 0 untuk mengulangi: ");
+        printf("\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ");
 
         getchar(); //clears buffer from '\n'(?)
-        if(getchar() == '1'){
+
+        char opt_ctr;
+
+        opt_ctr = getchar();
+
+        if(opt_ctr == '1'){
             //end this while loop
             tselect_menu_loop = FALSE;
-        }//user doesn't really need to input 0 again
+        }
+        else if(opt_ctr == 'X'){
+            *bypass_bool = TRUE;
+
+            tselect_menu_loop = FALSE;
+        }
+        //user still doesn't really need to input 0 again
     }
 }
 
-void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
+void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size, bool* bypass_bool){
+    //calcellation impl.
+    if(*bypass_bool){
+        return;
+    }
+    
     //this func vars.
     bool seat_menu_loop = TRUE;
     int optptr;
@@ -360,14 +406,14 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
         else{
             printf(INPUT_ERROR);
             printf(": kolom");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
 
         if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
             printf(INPUT_ERROR);
             printf(": kolom");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
         
@@ -375,7 +421,7 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
         if(srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
             printf(INPUT_ERROR);
             printf(": baris");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
 
@@ -383,11 +429,37 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
         if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length){
             printf(INPUT_ERROR);
             printf(": gerbong");
-            printf("\n");
+            printf("\n\n");
             continue;
         }
 
-        //printf("scar:%d scol:%d srow:%d\n", scar, scol, srow);
+        if(scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
+            printf(INPUT_ERROR);
+            printf(": kolom dan baris");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y){ //range checking
+            printf(INPUT_ERROR);
+            printf(": gerbong dan kolom");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){
+            printf(INPUT_ERROR);
+            printf(": gerbong dan baris");
+            printf("\n\n");
+            continue;
+        }
+        
+        if(scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length && scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y && srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x){ //range checking
+            printf(INPUT_ERROR);
+            printf(": gerbong, kolom, dan baris");
+            printf("\n\n");
+            continue;
+        }
 
         if(seatSetter(tgarage[seatless_order->train_index], DRIFT, scar, srow, scol)){ //sets seat to DRIFT to detect in mapper func.
             system(CLEAR_SCREEN);
@@ -399,12 +471,29 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
 
             trainMapper(tgarage[seatless_order->train_index]);
             printf("\nSeat terpilih ditandai '#'\n\n");
-            printf("Masukkan 1 untuk lanjut: ");
-            pause_scr('1');
+            printf("\n0: Mengulang pemilihan\n1: Melanjutkan transaksi\nX: Membatalkan transaksi\nMasukkan perintah: ");
 
-            seatSetter(tgarage[seatless_order->train_index], TRUE, scar, srow, scol); //sets DRIFT-ed seat to TRUE
+            getchar(); //clear \n
 
-            seat_menu_loop = FALSE;
+            char opt_ctr;
+
+            opt_ctr = getchar();
+
+            if(opt_ctr == '1'){
+                seatSetter(tgarage[seatless_order->train_index], TRUE, scar, srow, scol); //sets DRIFT-ed seat to TRUE
+
+                seat_menu_loop = FALSE;
+            }
+            else if(opt_ctr == 'X'){
+                *bypass_bool = TRUE;
+
+                seat_menu_loop = FALSE;
+            }
+            else{
+                seatSetter(tgarage[seatless_order->train_index], FALSE, scar, srow, scol); //reset seat to empty
+            }
+
+            
         }
         else{
             printf("Gagal memilih seat...\n");
@@ -415,7 +504,12 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size){
     }
 }
 
-void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
+void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size, bool* bypass_bool){
+    //calcellation impl.
+    if(*bypass_bool){
+        return;
+    }
+    
     int optvar;
 
     char name[50];
@@ -433,17 +527,22 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
         printf("\tTujuan\t: %s\n", station_list[props->destination_idx]);
         printf("\tKereta\t: %s\n", tgarage[props->train_index]->train_name);
         printf("\tJadwal\t: %s, %02d-%02d-%d @ %02d:%02d:%02d\n", props->day, props->date,  props->month, props->year, props->hour, props->minute, props->second);
-        printf("\tSeat\t: %d%c%d", props->pcar + 1, props->pseaty + 'A', props->pseatx + 1);
+        printf("\tSeat\t: %d%c%d\n", props->pcar + 1, props->pseaty + 'A', props->pseatx + 1);
+        printf("\tHarga\t: Rp.%.2d", props->price);
 
         printf("\n\n#######################################################\n\n");
-        printf("\t1.Lanjut.\n");
-        printf("\t2.Perbaiki jadwal.\n");
-        printf("\t3.Perbaiki rute.\n");
-        printf("\t4.Pilih ulang kereta.\n");
-        printf("\t5.Pilih ulang seat.\n");
-        printf("Opsi: ");
+        printf("\t1. Lanjut.\n");
+        printf("\t2. Perbaiki jadwal.\n");
+        printf("\t3. Perbaiki rute.\n");
+        printf("\t4. Pilih ulang kereta.\n");
+        printf("\t5. Pilih ulang seat.\n");
+        printf("\t6. Batalkan transaksi.\n");
+        printf("\nOpsi: ");
 
         scanf("%d", &optvar);
+
+        //function reading bool
+        bool is_passable = FALSE;
 
         switch(optvar){
             case 1:
@@ -459,23 +558,27 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size){
                 final_menu_loop = FALSE;
                 break;
             case 2:
-                orderDateInput(props);
+                orderDateInput(props, &is_passable);
                 break;
             case 3:
-                orderRouteInput(props);
+                orderRouteInput(props, &is_passable);
                 break;
             case 4:
-                trainSelector(props, tgarage, tgarage_size);
-                seatSelector(props, tgarage, tgarage_size); //must change seat if change train
+                trainSelector(props, tgarage, tgarage_size, &is_passable);
+                seatSelector(props, tgarage, tgarage_size, &is_passable); //must change seat if change train
                 break;
             case 5:
-                seatSelector(props, tgarage, tgarage_size);
+                seatSelector(props, tgarage, tgarage_size, &is_passable);
                 break;
+            case 6:
+                *bypass_bool = TRUE;
+                final_menu_loop = FALSE;
+                return; //to end this func.
             default:
                 printf(INPUT_ERROR);
                 printf("Masukkan 0 untuk lanjut: ");         
                 pause_scr('0');
-                finalizeOrder(props, tgarage, tgarage_size); //a recursion
+                finalizeOrder(props, tgarage, tgarage_size, is_passable); //a recursion
         }
 
         //order ID setter
@@ -524,7 +627,12 @@ int orderListArr(Order order_list_arr[], index order_arr_size){ //order array pl
     return -1;
 }
 
-void ticketView(Order* props, int ord_idx, Train* tgarage[], int tgarage_size){
+void ticketView(Order* props, int ord_idx, Train* tgarage[], int tgarage_size, bool* bypass_bool){
+    //calcellation impl.
+    if(*bypass_bool){
+        return;
+    }
+    
     char str_ctr[100]; //temporary string container
     int str_sz; //temporary 
 
@@ -555,11 +663,15 @@ void ticketView(Order* props, int ord_idx, Train* tgarage[], int tgarage_size){
     }
 
     printf("\n\n");
+    printf("Harga tiket     : Rp.%.2d\n\n", props->price);
     printf("Masukkan 1 untuk lanjut: ");
     pause_scr('1');
 }
 
 void newOrder(Order order_list_arr[], index order_arr_size, Train* train_garage[], int train_garage_size){
+
+    bool is_bypassed = FALSE; //implements ordering cancellation
+
     //position in array
     int posarr = orderListArr(order_list_arr, order_arr_size); //get empty position in array
 
@@ -579,16 +691,19 @@ void newOrder(Order order_list_arr[], index order_arr_size, Train* train_garage[
     Order new_order_ctr;
 
     printf("Pemesanan\n");
-    orderDateInput(&new_order_ctr);     //call date setter func.
-    orderRouteInput(&new_order_ctr);    //call route setter func.
-    trainSelector(&new_order_ctr, train_garage, train_garage_size); //call train setter func.
-    seatSelector(&new_order_ctr, train_garage, train_garage_size);  //seat setter.
-    finalizeOrder(&new_order_ctr, train_garage, train_garage_size); //finalize
+    orderDateInput(&new_order_ctr, &is_bypassed);     //call date setter func.
+    orderRouteInput(&new_order_ctr, &is_bypassed);    //call route setter func.
+    trainSelector(&new_order_ctr, train_garage, train_garage_size, &is_bypassed); //call train setter func.
+    seatSelector(&new_order_ctr, train_garage, train_garage_size, &is_bypassed);  //seat setter.
+    finalizeOrder(&new_order_ctr, train_garage, train_garage_size, &is_bypassed); //finalize
 
     //Ticket view
-    ticketView(&new_order_ctr, posarr, train_garage, train_garage_size); //print ticket
+    ticketView(&new_order_ctr, posarr, train_garage, train_garage_size, &is_bypassed); //print ticket
 
-    order_list_arr[posarr] = new_order_ctr; //assign new order to provided position in array
+    //if cancelled, bypass order queueing
+    if(!is_bypassed){
+        order_list_arr[posarr] = new_order_ctr; //assign new order to provided position in array
+    }
 }
 
 void searchOrder(Order order_list_arr[], index size, Train* train_garage[], int train_garage_size){
@@ -604,7 +719,8 @@ void searchOrder(Order order_list_arr[], index size, Train* train_garage[], int 
 
     for(int i = 0; i < size; i++){
         if(strcmp(order_list_arr[i].order_ID, ordID) == 0){
-            ticketView(&order_list_arr[i], i, train_garage, train_garage_size);
+            bool is_passable = FALSE;
+            ticketView(&order_list_arr[i], i, train_garage, train_garage_size, &is_passable);
             return;
         }
     }
