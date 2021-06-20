@@ -6,7 +6,7 @@
 
 #include "simulation.h"
 
-#define PSG_DST_COEFF 4     //probability param. the bigger the lesser occupied seat would be.
+#define PSG_DST_COEFF 1.725     //probability param. the bigger the lesser occupied seat would be.
 
 //train constructor and seat avalaibility gen. takes train name, price multiplier, and capacity.
 Train* trainFactory(const char* tname, float pmult, int hh, int mm, int ss, index ncar, index seatx, index seaty){

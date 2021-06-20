@@ -199,7 +199,7 @@ void orderRouteInput(Order* routeless_order, bool* bypass_bool){
         --dst;
 
         //check if input is valid
-        if(org > sizeof(distance_list)/sizeof(distance_list[0]) || dst > sizeof(distance_list)/sizeof(distance_list[0])){
+        if((org >= sizeof(distance_list)/sizeof(distance_list[0])) || (dst >= sizeof(distance_list)/sizeof(distance_list[0]))){
             printf(INPUT_ERROR);
             printf("\n\n");
             continue;
@@ -215,7 +215,7 @@ void orderRouteInput(Order* routeless_order, bool* bypass_bool){
         }
 
         printf("\nPesanan:\n");
-        printf("\tTanggal\t: ");
+        printf("\tTanggal\t\t: ");
         printf("%s, %d-%d-%d.\n", routeless_order->day, routeless_order->date, routeless_order->month, routeless_order->year);
         printf("\tStasiun asal\t: %s.\n", station_list[routeless_order->origin_idx]);
         printf("\tStasiun tujuan\t: %s.\n", station_list[routeless_order->destination_idx]);
@@ -408,7 +408,7 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size, boo
         if((scar < 0 || scar >= tgarage[seatless_order->train_index]->train_length) && (scol < 0 || scol >= tgarage[seatless_order->train_index]->psg_seat_y) && (srow < 0 || srow >= tgarage[seatless_order->train_index]->psg_seat_x)){ //range checking
             printf(INPUT_ERROR);
             printf(": gerbong, kolom, dan baris");
-            printf("(%c %d %c)", scar + 1, ncl, srow + 1);
+            printf("(%d %c %d)", scar + 1, ncl, srow + 1);
             printf("\n");
             printf("Masukkan 0 untuk lanjut: ");
             pause_scr('0');
@@ -491,7 +491,7 @@ void seatSelector(Order* seatless_order, Train* tgarage[], int tgarage_size, boo
             printf("Pemilihan seat berhasil!\n");
 
             seatless_order->pcar = scar;
-            seatless_order->pseatx = srow;
+            seatless_order->pseatx = srow ;
             seatless_order->pseaty = scol;
 
             trainMapper(tgarage[seatless_order->train_index]);
@@ -584,13 +584,18 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size, bool* bypas
                 break;
             case 2:
                 orderDateInput(props, &is_passable);
+                orderRouteInput(props, &is_passable);
+                trainSelector(props, tgarage, tgarage_size, &is_passable);
+                seatSelector(props, tgarage, tgarage_size, &is_passable);
                 break;
             case 3:
                 orderRouteInput(props, &is_passable);
+                trainSelector(props, tgarage, tgarage_size, &is_passable);
+                seatSelector(props, tgarage, tgarage_size, &is_passable);
                 break;
             case 4:
                 trainSelector(props, tgarage, tgarage_size, &is_passable);
-                seatSelector(props, tgarage, tgarage_size, &is_passable); //must change seat if change train
+                seatSelector(props, tgarage, tgarage_size, &is_passable);
                 break;
             case 5:
                 seatSelector(props, tgarage, tgarage_size, &is_passable);
@@ -604,6 +609,7 @@ void finalizeOrder(Order* props, Train* tgarage[], int tgarage_size, bool* bypas
                 printf("Masukkan 0 untuk lanjut: ");         
                 pause_scr('0');
                 finalizeOrder(props, tgarage, tgarage_size, is_passable); //a recursion
+                continue;
         }
 
         //order ID setter
@@ -681,7 +687,7 @@ void ticketView(Order* props, int ord_idx, Train* tgarage[], int tgarage_size, b
     printf("# Waktu         : %02d:%02d:%02d%*c\n", props->hour, props->minute, props->second, 24, '#');
     printf("# %*c\n", 48, '#');
     printf("# Kereta        : [%s]%*c\n", tgarage[props->train_index]->train_name, 50 - (int)strlen(tgarage[props->train_index]->train_name) - 20, '#');
-    printf("# Seat          : %-2d%-2c%-2d%*c\n", props->pcar, props->pseaty + 'A', props->pseatx, 26, '#');
+    printf("# Seat          : %-2d%-2c%-2d%*c\n", props->pcar + 1, props->pseaty + 'A', props->pseatx + 1, 26, '#');
 
     for(int i = 0; i < 50; i++){ //print upper border: 50 space width
         printf("#");
@@ -734,6 +740,7 @@ void newOrder(Order order_list_arr[], index order_arr_size, Train* train_garage[
 void searchOrder(Order order_list_arr[], index size, Train* train_garage[], int train_garage_size){
     system(CLEAR_SCREEN);
 
+    index i;
     char ordID[20];
 
     printf("Lihat Pesanan\n\n");
@@ -742,16 +749,24 @@ void searchOrder(Order order_list_arr[], index size, Train* train_garage[], int 
 
     scanf("%s", ordID);
 
-    for(int i = 0; i < size; i++){
-        if(strcmp(order_list_arr[i].order_ID, ordID) == 0){
+    bool is_ID_unique = DRIFT; //to check if ID's appears once in list...
+
+    for(i = 0; i < size; i++){
+        if((strcmp(order_list_arr[i].order_ID, ordID) == 0)){
             bool is_passable = FALSE;
             ticketView(&order_list_arr[i], i, train_garage, train_garage_size, &is_passable);
-            return;
+            is_ID_unique++;
         }
     }
 
-    printf("ID NOT FOUND!\n INPUT X TO EXIT: ");
-    pause_scr('X');
+    if(is_ID_unique > 0){
+        printf("\nID IS NOT UNIQUE (%u) DUE TO LIMITATION IN SIMULATION MECHANICS.\n", is_ID_unique + 1);
+    }
+
+    if(i == size && is_ID_unique == DRIFT){
+        printf("ID NOT FOUND!\n INPUT X TO EXIT: ");
+        pause_scr('X');
+    }
 }
 
 void listOrders(Order order_list_arr[], index size){
